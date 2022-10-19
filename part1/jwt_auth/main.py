@@ -21,11 +21,25 @@ from flask_restx import Api, Resource
 
 algo = 'HS256'
 secret = 's3cR$eT'
-token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6IlNreXBybyIsInJvbGUiOiJhZG1pbiJ9.fMPkh9GNQMlLRxO0PmvCjUPPwX0t4CM5Wk4ATt35mNY"
+token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6IlNreXByb" \
+        "yIsInJvbGUiOiJhZG1pbiJ9.fMPkh9GNQMlLRxO0PmvCjUPPwX0t4CM5Wk4" \
+        "ATt35mNY"
 
 def auth_required(func):
     # TODO напишите функцию-декоратор здесь
-    pass
+    def wrapper(*args, **kwargs):
+        if 'Authorization'not in request.headers:
+            abort(401)
+        data = request.headers['Authorization']
+        token =data.split("Bearer ")[-1]
+
+        try:
+            jwt.decode(token, secret, algorithms=[algo])
+                    except Exception as e:
+            print(f'Traceback: {e}')
+            abort(401)
+        return func(*args, **kwargs)
+    return wrapper
 
 # Ниже следует код инициализации фласк приложения.
 # Из которого следует что GET-запрос на адрес books могут делать все
